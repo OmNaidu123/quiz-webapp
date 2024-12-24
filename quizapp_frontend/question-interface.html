@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        input, button, select, textarea {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .question-list {
+            margin-top: 20px;
+        }
+        .question-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Question Manager</h1>
+
+        <!-- Fetch all questions -->
+        <button onclick="fetchAllQuestions()">Fetch All Questions</button>
+        
+        <!-- Fetch questions by category -->
+        <h3>Fetch Questions by Category</h3>
+        <input type="text" id="categoryInput" placeholder="Enter category" />
+        <button onclick="fetchQuestionsByCategory()">Fetch by Category</button>
+
+        <!-- Add new question -->
+        <h3>Add New Question</h3>
+        <textarea id="questionTitle" placeholder="Enter question title"></textarea>
+        <input type="text" id="option1" placeholder="Option 1" />
+        <input type="text" id="option2" placeholder="Option 2" />
+        <input type="text" id="option3" placeholder="Option 3" />
+        <input type="text" id="option4" placeholder="Option 4" />
+        <input type="text" id="rightAnswer" placeholder="Right Answer" />
+        <input type="text" id="difficultyLevel" placeholder="Difficulty Level" />
+        <input type="text" id="category" placeholder="Category" />
+        <button onclick="addQuestion()">Add Question</button>
+
+        <!-- Display fetched questions -->
+        <div class="question-list" id="questionList"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8765/question-service/question';
+
+        async function fetchAllQuestions() {
+            const response = await fetch(`${API_BASE}/allQuestions`);
+            const data = await response.json();
+            displayQuestions(data);
+        }
+
+        async function fetchQuestionsByCategory() {
+            const category = document.getElementById('categoryInput').value;
+            const response = await fetch(`${API_BASE}/${category}`);
+            const data = await response.json();
+            displayQuestions(data);
+        }
+
+        async function addQuestion() {
+            const question = {
+                questionTitle: document.getElementById('questionTitle').value,
+                option1: document.getElementById('option1').value,
+                option2: document.getElementById('option2').value,
+                option3: document.getElementById('option3').value,
+                option4: document.getElementById('option4').value,
+                rightAnswer: document.getElementById('rightAnswer').value,
+                difficultyLevel: document.getElementById('difficultyLevel').value,
+                category: document.getElementById('category').value,
+            };
+
+            const response = await fetch(`${API_BASE}/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(question),
+            });
+
+            const message = await response.text();
+            alert(message);
+        }
+
+        function displayQuestions(questions) {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = '';
+
+            questions.forEach(question => {
+                const div = document.createElement('div');
+                div.className = 'question-item';
+                div.innerHTML = `
+                    <h4>${question.questionTitle}</h4>
+                    <p>Options:</p>
+                    <ul>
+                        <li>${question.option1}</li>
+                        <li>${question.option2}</li>
+                        <li>${question.option3}</li>
+                        <li>${question.option4}</li>
+                    </ul>
+                    <p><strong>Answer:</strong> ${question.rightAnswer}</p>
+                    <p><strong>Category:</strong> ${question.category}</p>
+                    <p><strong>Difficulty Level:</strong> ${question.difficultyLevel}</p>
+                `;
+                questionList.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
